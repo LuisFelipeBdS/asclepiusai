@@ -2,8 +2,8 @@ import openai
 import streamlit as st
 
 # Load the OpenAI API key and password from Streamlit secrets
-openai.api_key = st.secrets["OPENAI_API_KEY"]
-APP_PASSWORD = st.secrets["APP_PASSWORD"]
+openai.api_key = st.secrets.get("OPENAI_API_KEY")
+APP_PASSWORD = st.secrets.get("APP_PASSWORD")
 
 # Check if the API key is available
 if not openai.api_key:
@@ -154,3 +154,84 @@ def main_page():
        - MONITORAMENTO: <Métodos de monitoramento e avaliação da eficácia da conduta>
        - AJUSTES: <Possíveis ajustes na conduta baseada na resposta do paciente>
     """
+
+    # Initialize session state
+    if "conversation" not in st.session_state:
+        st.session_state.conversation = [{'role': 'system', 'content': system_01_intake}]
+
+    if "user_messages" not in st.session_state:
+        st.session_state.user_messages = []
+
+    if "all_messages" not in st.session_state:
+        st.session_state.all_messages = []
+
+    # Function to call OpenAI API
+    def chatbot(conversation, model="gpt-3.5-turbo", temperature=0, max_tokens=3000):
+        response = openai.ChatCompletion.create(
+            model=model, 
+            messages=conversation, 
+            temperature=temperature, 
+            max_tokens=max_tokens
+        )
+        text = response['choices'][0]['message']['content']
+        return text
+
+    # Chatbot interaction
+    st.markdown("<h1 style='color: purple;'>Asclepius</h1>", unsafe_allow_html=True)
+
+    st.header("Descreva o caso clínico. Digite PRONTO quando terminar.")
+    if prompt := st.text_area("Luis:", height=200):
+        if prompt.strip().upper() != "PRONTO":
+            st.session_state.user_messages.append(prompt)
+            st.session_state.all_messages.append(f'Luis: {prompt}')
+            st.session_state.conversation.append({'role': 'user', 'content': prompt})
+            
+            response = chatbot(st.session_state.conversation)
+            st.session_state.conversation.append({'role': 'assistant', 'content': response})
+            st.session_state.all_messages.append(f'RECEPÇÃO: {response}')
+            st.write(f'**RECEPÇÃO:** {response}')
+        else:
+            st.write("Consegui os dados. Gerando notas e relatórios...")
+
+            # Generate Intake Notes
+            st.write("**Gerando Notas de Recepção...**")
+            notes_conversation = [{'role': 'system', 'content': system_02_prepare_notes}]
+            text_block = '\n\n'.join(st.session_state.all_messages)
+            chat_log = f'<<INÍCIO DO CHAT DE RECEPÇÃO DO PACIENTE>>\n\n{text_block}\n\n<<FIM DO CHAT DE RECEPÇÃO DO PACIENTE>>'
+            notes_conversation.append({'role': 'user', 'content': chat_log})
+            notes = chatbot(notes_conversation)
+            st.write(f'**Versão das notas da conversa:**\n\n{notes}')
+
+            # Generate Hypothesis Report
+            st.write("**Gerando Relatório de Hipóteses...**")
+            report_conversation = [{'role': 'system', 'content': system_03_diagnosis}]
+            report_conversation.append({'role': 'user', 'content': notes})
+            report = chatbot(report_conversation)
+            st.write(f'**Relatório de Hipóteses:**\n\n{report}')
+
+            # Prepare for Clinical Evaluation
+            st.write("**Preparando para Avaliação Clínica...**")
+            clinical_conversation = [{'role': 'system', 'content': system_04_clinical}]
+            clinical_conversation.append({'role': 'user', 'content': notes})
+            clinical = chatbot(clinical_conversation)
+            st.write(f'**Avaliação Clínica:**\n\n{clinical}')
+
+            # Generate Referrals and Tests
+            st.write("**Gerando Encaminhamentos e Exames Complementares...**")
+            referrals_conversation = [{'role': 'system', 'content': system_05_referrals}]
+            referrals_conversation.append({'role': 'user', 'content': notes})
+            referrals = chatbot(referrals_conversation)
+            st.write(f'**Encaminhamentos e Exames Complementares:**\n\n{referrals}')
+
+            # Generate Suggested Medical Conduct
+            st.write("**Gerando Conduta Médica Sugerida...**")
+            conduct_conversation = [{'role': 'system', 'content': system_06_conduct}]
+            conduct_conversation.append({'role': 'user', 'content': notes})
+            conduct = chatbot(conduct_conversation)
+            st.write(f'**Conduta Médica Sugerida:**\n\n{conduct}')
+
+# Main Execution Flow
+if st.session_state.logged_in:
+    main_page()
+else:
+    login_page()
