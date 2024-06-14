@@ -3,12 +3,30 @@ import streamlit as st
 
 # Load the OpenAI API key from Streamlit secrets
 openai.api_key = st.secrets["OPENAI_API_KEY"]
+APP_PASSWORD = st.secrets["APP_PASSWORD"]
 
 # Check if the API key is available
 if not openai.api_key:
     st.warning("Por favor, insira sua chave API OpenAI para continuar.")
     st.stop()
 
+# Check if the user is logged in
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+# Function to display the login page
+def login_page():
+    st.markdown("<h1 style='color: purple;'>Asclepius Login</h1>", unsafe_allow_html=True)
+    password = st.text_input("Enter the password:", type="password")
+    if st.button("Login"):
+        if password == APP_PASSWORD:
+            st.session_state.logged_in = True
+            st.experimental_rerun()
+        else:
+            st.error("Incorrect password. Please try again.")
+
+# Function to display the main content
+def main_page():
 # Content for instruction files in Portuguese
 system_01_intake = """
 # MISSÃO
