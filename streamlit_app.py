@@ -1,9 +1,8 @@
-from openai import OpenAI
-
-client = OpenAI(api_key=st.secrets.get("OPENAI_API_KEY"))
+import openai
 import streamlit as st
 
 # Load the OpenAI API key and password from Streamlit secrets
+openai.api_key = st.secrets.get("OPENAI_API_KEY")
 APP_PASSWORD = st.secrets.get("APP_PASSWORD")
 
 # Check if the API key is available
