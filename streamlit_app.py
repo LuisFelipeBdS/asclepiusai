@@ -23,7 +23,7 @@ def login_page():
             st.session_state.logged_in = True
             st.experimental_rerun()
         else:
-            st.error("Senha incorreta, tente novamente.")
+            st.error("Senha incorreta. Por favor, tente novamente.")
 
 # Function to display the main content
 def main_page():
@@ -173,7 +173,7 @@ def main_page():
             temperature=temperature, 
             max_tokens=max_tokens
         )
-        text = response['choices'][0]['message']['content']
+        text = response.choices[0].message["content"]
         return text
 
     # Chatbot interaction
