@@ -1,8 +1,9 @@
-import openai
+from openai import OpenAI
+
+client = OpenAI(api_key=st.secrets.get("OPENAI_API_KEY"))
 import streamlit as st
 
 # Load the OpenAI API key and password from Streamlit secrets
-openai.api_key = st.secrets.get("OPENAI_API_KEY")
 APP_PASSWORD = st.secrets.get("APP_PASSWORD")
 
 # Check if the API key is available
@@ -167,13 +168,11 @@ def main_page():
 
     # Function to call OpenAI API
     def chatbot(conversation, model="gpt-3.5-turbo", temperature=0, max_tokens=3000):
-        response = openai.ChatCompletion.create(
-            model=model, 
-            messages=conversation, 
-            temperature=temperature, 
-            max_tokens=max_tokens
-        )
-        text = response.choices[0].message["content"]
+        response = client.chat.completions.create(model=model, 
+        messages=conversation, 
+        temperature=temperature, 
+        max_tokens=max_tokens)
+        text = response.choices[0].message.content
         return text
 
     # Chatbot interaction
@@ -185,7 +184,7 @@ def main_page():
             st.session_state.user_messages.append(prompt)
             st.session_state.all_messages.append(f'Luis: {prompt}')
             st.session_state.conversation.append({'role': 'user', 'content': prompt})
-            
+
             response = chatbot(st.session_state.conversation)
             st.session_state.conversation.append({'role': 'assistant', 'content': response})
             st.session_state.all_messages.append(f'RECEPÇÃO: {response}')
