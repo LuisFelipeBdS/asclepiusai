@@ -167,11 +167,13 @@ def main_page():
 
     # Function to call OpenAI API
     def chatbot(conversation, model="gpt-3.5-turbo", temperature=0, max_tokens=3000):
-        response = client.chat.completions.create(model=model, 
-        messages=conversation, 
-        temperature=temperature, 
-        max_tokens=max_tokens)
-        text = response.choices[0].message.content
+        response = openai.ChatCompletion.create(
+            model=model, 
+            messages=conversation, 
+            temperature=temperature, 
+            max_tokens=max_tokens
+        )
+        text = response['choices'][0]['message']['content']
         return text
 
     # Chatbot interaction
