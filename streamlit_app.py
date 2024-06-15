@@ -17,13 +17,13 @@ if "logged_in" not in st.session_state:
 # Function to display the login page
 def login_page():
     st.markdown("<h1 style='color: purple;'>Asclepius Login</h1>", unsafe_allow_html=True)
-    password = st.text_input("Enter the password:", type="password")
+    password = st.text_input("Digite a senha:", type="senha")
     if st.button("Login"):
         if password == APP_PASSWORD:
             st.session_state.logged_in = True
             st.experimental_rerun()
         else:
-            st.error("Incorrect password. Please try again.")
+            st.error("Senha incorreta, tente novamente.")
 
 # Function to display the main content
 def main_page():
