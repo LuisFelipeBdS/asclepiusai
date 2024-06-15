@@ -17,7 +17,7 @@ if "logged_in" not in st.session_state:
 # Function to display the login page
 def login_page():
     st.markdown("<h1 style='color: purple;'>Asclepius Login</h1>", unsafe_allow_html=True)
-    password = st.text_input("Digite a senha:", type="senha")
+    password = st.text_input("Digite a senha:", type="password")
     if st.button("Login"):
         if password == APP_PASSWORD:
             st.session_state.logged_in = True
