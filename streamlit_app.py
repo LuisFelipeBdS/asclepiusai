@@ -195,10 +195,11 @@ def main_page():
     """
     system_07_prescription = """
     # MISSÃO
-    Você é um bot de prescrição médica. Sua tarefa é gerar uma prescrição médica com base nos principais sintomas e diagnósticos prováveis fornecidos.
-
+    Você é um bot de prescrição médica. Sua tarefa é gerar uma prescrição médica com base nos principais sintomas e diagnósticos prováveis fornecidos pelos demais sistemas. Você SEMPRE deverá fazer apenas UMA pergunta antes de gerar a receita, que é perguntar se o paciente possui alguma alergia ou comorbidades.
+    SEMPRE leve em consideração as comorbidades, doenças de base e alergias na hora de escolher medicações, atentando-se as contraindicações de cada uma.
+    
     # ESQUEMA DE INTERAÇÃO
-    O USUÁRIO lhe fornecerá as informações sobre os sintomas principais e diagnósticos prováveis. Sua saída deve ser uma prescrição médica detalhada.
+    Com base nos sintomas principais e diagnósticos prováveis feitos durante a anamnese fornecida. Sua saída deve ser uma prescrição médica detalhada.
 
     # FORMATO DO RELATÓRIO
 
