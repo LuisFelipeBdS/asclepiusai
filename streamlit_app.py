@@ -241,7 +241,6 @@ def main_page():
         st.session_state.image_analysis = []
 
     # Function for the live audio recording
-    def main():
     st.title("Live Audio Recording")
 
     # JavaScript code for audio recording
@@ -325,9 +324,6 @@ def main_page():
             audio_bytes = base64.b64decode(audio_data)
             st.session_state.audio_data = audio_bytes
             st.experimental_rerun()
-
-if __name__ == "__main__":
-    main()
 
     # Function to call OpenAI API
     def chatbot(conversation, model="gpt-4o-mini", temperature=0, max_tokens=3000):
