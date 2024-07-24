@@ -21,11 +21,11 @@ if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
 # Function to transcribe audio using Whisper API
-def transcribe_audio(audio_file):
+def transcribe_audio(audio_bytes):
     try:
         transcript = client.audio.transcriptions.create(
             model="whisper-1",
-            file=audio_file
+            file=("audio.wav", audio_bytes, "audio/wav")
         )
         return transcript.text
     except Exception as e:
@@ -240,8 +240,22 @@ def main_page():
     if "image_analysis" not in st.session_state:
         st.session_state.image_analysis = []
 
-    # Function for the live audio recording
-    st.title("Live Audio Recording")
+    # Function to call OpenAI API
+    def chatbot(conversation, model="gpt-4o-mini", temperature=0, max_tokens=3000):
+        response = client.chat.completions.create(
+            model=model, 
+            messages=conversation, 
+            temperature=temperature, 
+            max_tokens=max_tokens
+        )
+        text = response.choices[0].message.content
+        return text
+
+    # Chatbot interaction
+    st.markdown("<h1 style='color: purple;'>Asclepius</h1>", unsafe_allow_html=True)
+
+# Function for the live audio recording
+    st.title("Anamnese por gravação de audio")
 
     # JavaScript code for audio recording
     js_code = """
@@ -300,8 +314,8 @@ def main_page():
     }
     </script>
 
-    <button id="start" onclick="startRecording()">Start Recording</button>
-    <button id="stop" onclick="stopRecording()" disabled>Stop Recording</button>
+    <button id="start" onclick="startRecording()">Começar gravação</button>
+    <button id="stop" onclick="stopRecording()" disabled>Pausar gravação</button>
     """
 
     # Display the HTML and JavaScript code
@@ -318,49 +332,35 @@ def main_page():
                 st.session_state.all_messages.append(f'TRANSCRIPTION: {transcription}')
 
     # Handle the POST request with audio data
-    if st.button("Process Recorded Audio"):
+    if st.button("Processar gravação de audio"):
         audio_data = st.session_state.get('_json_data', {}).get('audio_data', '')
         if audio_data:
             audio_bytes = base64.b64decode(audio_data)
             st.session_state.audio_data = audio_bytes
             st.experimental_rerun()
 
-    # Function to call OpenAI API
-    def chatbot(conversation, model="gpt-4o-mini", temperature=0, max_tokens=3000):
-        response = client.chat.completions.create(
-            model=model, 
-            messages=conversation, 
-            temperature=temperature, 
-            max_tokens=max_tokens
-        )
-        text = response.choices[0].message.content
-        return text
-
-    # Chatbot interaction
-    st.markdown("<h1 style='color: purple;'>Asclepius</h1>", unsafe_allow_html=True)
-
 # Audio recording and transcription
-    st.header("Audio Recording and Transcription")
-    audio_file = st.file_uploader("Upload an audio file", type=["wav", "mp3", "m4a"])
+    st.header("Transcrição de gravação")
+    audio_file = st.file_uploader("Faça upload de arquivo de audio", type=["wav", "mp3", "m4a"])
     if audio_file is not None:
         st.audio(audio_file, format="audio/wav")
-        if st.button("Transcribe Audio"):
+        if st.button("Transcrever audio"):
             transcription = transcribe_audio(audio_file)
             if transcription:
                 st.session_state.transcription = transcription
-                st.write("Transcription:", transcription)
+                st.write("Transcrição:", transcription)
                 st.session_state.all_messages.append(f'TRANSCRIPTION: {transcription}')
 
     # Image upload and analysis
-    st.header("Image Upload and Analysis")
-    image_file = st.file_uploader("Upload a medical image", type=["jpg", "jpeg", "png"])
+    st.header("Faça upload de imagem")
+    image_file = st.file_uploader("Upload de imagem médica", type=["jpg", "jpeg", "png"])
     if image_file is not None:
-        st.image(image_file, caption="Uploaded Image", use_column_width=True)
-        if st.button("Analyze Image"):
+        st.image(image_file, caption="Imagem", use_column_width=True)
+        if st.button("Analizar imagem"):
             image_analysis = analyze_image(image_file)
             if image_analysis:
                 st.session_state.image_analysis.append(image_analysis)
-                st.write("Image Analysis:", image_analysis)
+                st.write("Análise de imagem", image_analysis)
                 st.session_state.all_messages.append(f'IMAGE ANALYSIS: {image_analysis}')
 
     st.header("Descreva o caso clínico. Digite PRONTO quando terminar.")
@@ -419,7 +419,7 @@ def main_page():
             conduct = chatbot(conduct_conversation)
             st.write(f'**Conduta Médica Sugerida:**\n\n{conduct}')
 
-        elif prompt.strip().upper() == "PRESCRIPTION":
+        elif prompt.strip().upper() == "PRESCRIÇÃO":
             st.write("Gerando prescrição médica...")
 
             # Generate Prescription
