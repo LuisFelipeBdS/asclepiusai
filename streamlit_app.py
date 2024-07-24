@@ -1,5 +1,7 @@
 import openai
 import streamlit as st
+from io import BytesIO
+import base64
 
 # Initialize OpenAI client
 client = openai.Client(api_key=st.secrets.get("OPENAI_API_KEY"))
@@ -15,6 +17,39 @@ if not client.api_key:
 # Check if the user is logged in
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
+
+# Function to transcribe audio using Whisper API
+def transcribe_audio(audio_file):
+    try:
+        transcript = client.audio.transcriptions.create(
+            model="whisper-1",
+            file=audio_file
+        )
+        return transcript.text
+    except Exception as e:
+        st.error(f"Erro na transcrição: {str(e)}")
+        return None
+    
+# Function to analyze image using OpenAI API
+def analyze_image(image_file):
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4-vision-preview",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "Analyze this medical image and provide a detailed description."},
+                        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64.b64encode(image_file.getvalue()).decode()}"}}
+                    ],
+                }
+            ],
+            max_tokens=300,
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        st.error(f"Erro na análise da imagem: {str(e)}")
+        return None
 
 # Function to display the login page
 def login_page():
@@ -156,6 +191,36 @@ def main_page():
        - MONITORAMENTO: <Métodos de monitoramento e avaliação da eficácia da conduta>
        - AJUSTES: <Possíveis ajustes na conduta baseada na resposta do paciente>
     """
+    system_07_prescription = """
+    # MISSÃO
+    Você é um bot de prescrição médica. Sua tarefa é gerar uma prescrição médica com base nos principais sintomas e diagnósticos prováveis fornecidos.
+
+    # ESQUEMA DE INTERAÇÃO
+    O USUÁRIO lhe fornecerá as informações sobre os sintomas principais e diagnósticos prováveis. Sua saída deve ser uma prescrição médica detalhada.
+
+    # FORMATO DO RELATÓRIO
+
+    PRESCRIÇÃO MÉDICA
+
+    Data: <Data atual>
+
+    Nome do Paciente: <Nome do paciente, se fornecido>
+
+    1. <NOME DO MEDICAMENTO>
+       - Dosagem: <Dosagem recomendada>
+       - Frequência: <Frequência de administração>
+       - Duração: <Duração do tratamento>
+       - Instruções especiais: <Quaisquer instruções específicas para a administração>
+
+    2. <NOME DO MEDICAMENTO>
+       - Dosagem: <Dosagem recomendada>
+       - Frequência: <Frequência de administração>
+       - Duração: <Duração do tratamento>
+       - Instruções especiais: <Quaisquer instruções específicas para a administração>
+
+    RECOMENDAÇÕES ADICIONAIS:
+    - <Qualquer recomendação adicional ou cuidados especiais>
+"""
 
     # Initialize session state
     if "conversation" not in st.session_state:
@@ -167,8 +232,14 @@ def main_page():
     if "all_messages" not in st.session_state:
         st.session_state.all_messages = []
 
+    if "transcription" not in st.session_state:
+        st.session_state.transcription = ""
+
+    if "image_analysis" not in st.session_state:
+        st.session_state.image_analysis = []
+
     # Function to call OpenAI API
-    def chatbot(conversation, model="gpt-3.5-turbo", temperature=0, max_tokens=3000):
+    def chatbot(conversation, model="gpt-4o-mini", temperature=0, max_tokens=3000):
         response = client.chat.completions.create(
             model=model, 
             messages=conversation, 
@@ -181,9 +252,33 @@ def main_page():
     # Chatbot interaction
     st.markdown("<h1 style='color: purple;'>Asclepius</h1>", unsafe_allow_html=True)
 
+# Audio recording and transcription
+    st.header("Audio Recording and Transcription")
+    audio_file = st.file_uploader("Upload an audio file", type=["wav", "mp3", "m4a"])
+    if audio_file is not None:
+        st.audio(audio_file, format="audio/wav")
+        if st.button("Transcribe Audio"):
+            transcription = transcribe_audio(audio_file)
+            if transcription:
+                st.session_state.transcription = transcription
+                st.write("Transcription:", transcription)
+                st.session_state.all_messages.append(f'TRANSCRIPTION: {transcription}')
+
+    # Image upload and analysis
+    st.header("Image Upload and Analysis")
+    image_file = st.file_uploader("Upload a medical image", type=["jpg", "jpeg", "png"])
+    if image_file is not None:
+        st.image(image_file, caption="Uploaded Image", use_column_width=True)
+        if st.button("Analyze Image"):
+            image_analysis = analyze_image(image_file)
+            if image_analysis:
+                st.session_state.image_analysis.append(image_analysis)
+                st.write("Image Analysis:", image_analysis)
+                st.session_state.all_messages.append(f'IMAGE ANALYSIS: {image_analysis}')
+
     st.header("Descreva o caso clínico. Digite PRONTO quando terminar.")
     if prompt := st.text_area("Luis:", height=200):
-        if prompt.strip().upper() != "PRONTO":
+        if prompt.strip().upper() != "PRONTO" and prompt.strip().upper() != "PRESCRIPTION":
             st.session_state.user_messages.append(prompt)
             st.session_state.all_messages.append(f'Luis: {prompt}')
             st.session_state.conversation.append({'role': 'user', 'content': prompt})
@@ -192,15 +287,20 @@ def main_page():
             st.session_state.conversation.append({'role': 'assistant', 'content': response})
             st.session_state.all_messages.append(f'RECEPÇÃO: {response}')
             st.write(f'**RECEPÇÃO:** {response}')
-        else:
+        elif prompt.strip().upper() == "PRONTO":
             st.write("Consegui os dados. Gerando notas e relatórios...")
+
+            # Include transcription and image analysis in the notes
+            all_input = '\n\n'.join(st.session_state.all_messages)
+            if st.session_state.transcription:
+                all_input += f"\n\nAudio Transcription:\n{st.session_state.transcription}"
+            if st.session_state.image_analysis:
+                all_input += f"\n\nImage Analysis:\n" + "\n".join(st.session_state.image_analysis)
 
             # Generate Intake Notes
             st.write("**Gerando Notas de Recepção...**")
             notes_conversation = [{'role': 'system', 'content': system_02_prepare_notes}]
-            text_block = '\n\n'.join(st.session_state.all_messages)
-            chat_log = f'<<INÍCIO DO CHAT DE RECEPÇÃO DO PACIENTE>>\n\n{text_block}\n\n<<FIM DO CHAT DE RECEPÇÃO DO PACIENTE>>'
-            notes_conversation.append({'role': 'user', 'content': chat_log})
+            notes_conversation.append({'role': 'user', 'content': all_input})
             notes = chatbot(notes_conversation)
             st.write(f'**Versão das notas da conversa:**\n\n{notes}')
 
@@ -231,6 +331,15 @@ def main_page():
             conduct_conversation.append({'role': 'user', 'content': notes})
             conduct = chatbot(conduct_conversation)
             st.write(f'**Conduta Médica Sugerida:**\n\n{conduct}')
+
+        elif prompt.strip().upper() == "PRESCRIPTION":
+            st.write("Gerando prescrição médica...")
+
+            # Generate Prescription
+            prescription_conversation = [{'role': 'system', 'content': system_07_prescription}]
+            prescription_conversation.append({'role': 'user', 'content': f"Symptoms and probable diagnosis:\n{report}"})
+            prescription = chatbot(prescription_conversation)
+            st.write(f'**Prescrição Médica:**\n\n{prescription}')
 
 # Main Execution Flow
 if st.session_state.logged_in:
