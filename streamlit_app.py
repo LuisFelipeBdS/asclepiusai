@@ -2,6 +2,8 @@ import openai
 import streamlit as st
 from io import BytesIO
 import base64
+import numpy as np
+from streamlit.components.v1 import html
 
 # Initialize OpenAI client
 client = openai.Client(api_key=st.secrets.get("OPENAI_API_KEY"))
@@ -237,6 +239,95 @@ def main_page():
 
     if "image_analysis" not in st.session_state:
         st.session_state.image_analysis = []
+
+    # Function for the live audio recording
+    def main():
+    st.title("Live Audio Recording")
+
+    # JavaScript code for audio recording
+    js_code = """
+    <script>
+    let mediaRecorder;
+    let audioChunks = [];
+
+    function startRecording() {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.start();
+
+                mediaRecorder.addEventListener("dataavailable", event => {
+                    audioChunks.push(event.data);
+                });
+
+                mediaRecorder.addEventListener("stop", () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const audio = new Audio(audioUrl);
+                    audio.play();
+                    sendData(audioBlob);
+                });
+
+                document.getElementById("start").disabled = true;
+                document.getElementById("stop").disabled = false;
+            });
+    }
+
+    function stopRecording() {
+        mediaRecorder.stop();
+        document.getElementById("start").disabled = false;
+        document.getElementById("stop").disabled = true;
+    }
+
+    function sendData(audioBlob) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const base64data = event.target.result.split(',')[1];
+            fetch('/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ audio_data: base64data })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.parent.postMessage({type: 'audioRecorded'}, '*');
+                }
+            });
+        };
+        reader.readAsDataURL(audioBlob);
+    }
+    </script>
+
+    <button id="start" onclick="startRecording()">Start Recording</button>
+    <button id="stop" onclick="stopRecording()" disabled>Stop Recording</button>
+    """
+
+    # Display the HTML and JavaScript code
+    html(js_code, height=100)
+
+    # Check if audio data has been received
+    if 'audio_data' in st.session_state:
+        st.audio(st.session_state.audio_data, format='audio/wav')
+        if st.button("Transcribe Audio"):
+            transcription = transcribe_audio(st.session_state.audio_data)
+            if transcription:
+                st.write("Transcription:", transcription)
+                st.session_state.transcription = transcription
+                st.session_state.all_messages.append(f'TRANSCRIPTION: {transcription}')
+
+    # Handle the POST request with audio data
+    if st.button("Process Recorded Audio"):
+        audio_data = st.session_state.get('_json_data', {}).get('audio_data', '')
+        if audio_data:
+            audio_bytes = base64.b64decode(audio_data)
+            st.session_state.audio_data = audio_bytes
+            st.experimental_rerun()
+
+if __name__ == "__main__":
+    main()
 
     # Function to call OpenAI API
     def chatbot(conversation, model="gpt-4o-mini", temperature=0, max_tokens=3000):
