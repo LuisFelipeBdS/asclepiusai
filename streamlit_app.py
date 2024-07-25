@@ -521,9 +521,7 @@ def main_page():
 
     st.header("Descreva o caso clínico. Digite PRONTO quando terminar.")
     prompt = st.text_area("Luis:", height=200)
-    
-    if st.button("Enviar"):
-        if prompt.strip().upper() != "PRONTO":
+    if prompt.strip().upper() != "PRONTO":
             st.session_state.user_messages.append(prompt)
             st.session_state.all_messages.append(f'Luis: {prompt}')
             st.session_state.conversation.append({'role': 'user', 'content': prompt})
@@ -532,7 +530,7 @@ def main_page():
             st.session_state.conversation.append({'role': 'assistant', 'content': response})
             st.session_state.all_messages.append(f'RECEPÇÃO: {response}')
             st.write(f'**RECEPÇÃO:** {response}')
-        else:
+    else:
             st.write("Consegui os dados. Gerando notas e relatórios...")
 
             # Include transcription and image analysis in the notes
@@ -581,7 +579,7 @@ def main_page():
             st.write(f'**Conduta Médica Sugerida:**\n\n{conduct}')
         
           # Generate Prescription
-    if st.button("PRESCRIÇÃO"):
+    if prompt.strip().upper() != "PRESCRIÇÃO":
         if st.session_state.notes:
             st.write("**Gerando Prescrição Médica...**")
             prescription_conversation = [{'role': 'system', 'content': system_07_prescription}]
