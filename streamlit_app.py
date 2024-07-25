@@ -71,27 +71,6 @@ p, label, .stTextInput label, .stTextArea label {
 </style>
 """, unsafe_allow_html=True)
 
-# JavaScript to handle Enter key press
-js_code = """
-<script>
-document.addEventListener('keydown', function(e) {
-    if (e.key == 'Enter' && !e.shiftKey) {
-        const textArea = document.querySelector('.stTextArea textarea');
-        if (textArea && textArea === document.activeElement) {
-            e.preventDefault();
-            const submitButton = document.querySelector('button.stButton');
-            if (submitButton) {
-                submitButton.click();
-            }
-        }
-    }
-});
-</script>
-"""
-
-# Render the JavaScript
-html(js_code)
-
 # Initialize OpenAI client
 client = openai.Client(api_key=st.secrets.get("OPENAI_API_KEY"))
 
@@ -540,7 +519,27 @@ def main_page():
                 st.write("Análise de imagem", image_analysis)
                 st.session_state.all_messages.append(f'IMAGE ANALYSIS: {image_analysis}')
 
-    st.header("Descreva o caso clínico. Digite PRONTO quando terminar.")
+# JavaScript to handle Enter key press
+js_code = """
+<script>
+document.addEventListener('keydown', function(e) {
+    if (e.key == 'Enter' && !e.shiftKey) {
+        const textArea = document.querySelector('.stTextArea textarea');
+        if (textArea && textArea === document.activeElement) {
+            e.preventDefault();
+            const submitButton = document.querySelector('button.stButton');
+            if (submitButton) {
+                submitButton.click();
+            }
+        }
+    }
+});
+</script>
+"""
+
+# Render the JavaScript
+html(js_code)
+
 st.header("Descreva o caso clínico. Digite PRONTO quando terminar.")
 
 # Create a text area for input
