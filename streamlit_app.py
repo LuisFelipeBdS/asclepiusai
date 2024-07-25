@@ -7,10 +7,28 @@ from streamlit.components.v1 import html
 
 st.markdown("""
 <style>
+/* Base styles for dark theme */
 .stApp {
     background-color: #1E1E1E;
     color: #FFFFFF;
 }
+
+/* Ensure all text elements are visible */
+.stTextInput > div > div > input, .stTextArea > div > div > textarea {
+    color: #FFFFFF;
+}
+
+/* Style for all headers */
+h1, h2, h3, h4, h5, h6 {
+    color: #4CAF50 !important;
+}
+
+/* Style for paragraphs and labels */
+p, label, .stTextInput label, .stTextArea label {
+    color: #FFFFFF !important;
+}
+
+/* Style for buttons */
 .stButton > button {
     color: #FFFFFF;
     background-color: #4CAF50;
@@ -28,6 +46,27 @@ st.markdown("""
 .stButton > button:hover {
     background-color: #45a049;
 }
+
+/* Ensure file uploader text is visible */
+.stFileUploader > div > div > div {
+    color: #FFFFFF !important;
+}
+
+/* Style for checkboxes and radio buttons */
+.stCheckbox > label, .stRadio > label {
+    color: #FFFFFF !important;
+}
+
+/* Ensure dropdown/selectbox text is visible */
+.stSelectbox > div > div > div {
+    color: #FFFFFF !important;
+}
+
+/* Style for info, success, warning, and error boxes */
+.stAlert > div {
+    color: #1E1E1E !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
