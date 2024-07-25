@@ -64,6 +64,37 @@ def login_page():
         else:
             st.error("Senha incorreta. Por favor, tente novamente.")
 
+def copy_to_clipboard_button(text, button_text="Copiar conteúdo"):
+    """
+    Create a button that copies the given text to clipboard when clicked.
+    
+    :param text: The text to be copied to clipboard
+    :param button_text: The text to display on the button
+    :return: None
+    """
+    # Encode the text to make it safe for passing to JavaScript
+    encoded_text = text.replace("'", "\\'").replace("\n", "\\n")
+    
+    # JavaScript function to copy text to clipboard
+    js_code = f"""
+    <script>
+    function copyToClipboard() {{
+        const text = '{encoded_text}';
+        navigator.clipboard.writeText(text).then(function() {{
+            console.log('Text successfully copied to clipboard');
+            alert('Copied to clipboard!');
+        }}).catch(function(err) {{
+            console.error('Could not copy text: ', err);
+            alert('Failed to copy text. Please try again.');
+        }});
+    }}
+    </script>
+    <button onclick="copyToClipboard()">{button_text}</button>
+    """
+    
+    # Render the button using Streamlit's html component
+    html(js_code, height=50)
+
 # Function to display the main content
 def main_page():
     # Content for instruction files in Portuguese
@@ -420,11 +451,12 @@ def main_page():
                 all_input += f"\n\nImage Analysis:\n" + "\n".join(st.session_state.image_analysis)
 
             # Generate Intake Notes
-            st.write("**Gerando Notas de Recepção...**")
+            st.write("**Gerando anamnese...**")
             notes_conversation = [{'role': 'system', 'content': system_02_prepare_notes}]
             notes_conversation.append({'role': 'user', 'content': all_input})
             notes = chatbot(notes_conversation)
             st.write(f'**Versão das notas da conversa:**\n\n{notes}')
+            copy_to_clipboard_button(notes, "Copiar anamnese")
 
             # Generate Hypothesis Report
             st.write("**Gerando Relatório de Hipóteses...**")
@@ -432,6 +464,7 @@ def main_page():
             report_conversation.append({'role': 'user', 'content': notes})
             report = chatbot(report_conversation)
             st.write(f'**Relatório de Hipóteses:**\n\n{report}')
+            copy_to_clipboard_button(notes, "Copiar hipótese diagnóstica")
 
             # Prepare for Clinical Evaluation
             st.write("**Preparando para Avaliação Clínica...**")
@@ -446,6 +479,7 @@ def main_page():
             referrals_conversation.append({'role': 'user', 'content': notes})
             referrals = chatbot(referrals_conversation)
             st.write(f'**Encaminhamentos e Exames Complementares:**\n\n{referrals}')
+            copy_to_clipboard_button(notes, "Copiar encaminhamentos")
 
             # Generate Suggested Medical Conduct
             st.write("**Gerando Conduta Médica Sugerida...**")
@@ -464,6 +498,7 @@ def main_page():
         prescription_conversation.append({'role': 'user', 'content': st.session_state.notes})
         prescription = chatbot(prescription_conversation)
         st.write(f'**Prescrição Médica:**\n\n{prescription}')
+        copy_to_clipboard_button(notes, "Copiar prescrição")
 
 # Main Execution Flow
 if st.session_state.logged_in:
