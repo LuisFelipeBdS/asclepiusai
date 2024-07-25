@@ -13,9 +13,10 @@ st.markdown("""
     color: #FFFFFF;
 }
 
-/* Ensure all text elements are visible */
+/* Style for input and textarea */
 .stTextInput > div > div > input, .stTextArea > div > div > textarea {
-    color: #FFFFFF;
+    color: #000000 !important;
+    background-color: #FFFFFF !important;
 }
 
 /* Style for all headers */
