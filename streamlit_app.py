@@ -114,7 +114,7 @@ def main_page():
         - AUSCULTA RESPIRATÓRIA: Murmúrio vesicular presente, sem ruídos adventícios, 19 IRPM.
         - AUSCULTA CARDIOVASCULAR: Ritmo cardíaco regular, em 2 tempos, bulhas normofonéticas, sem sopros ou estalidos.
         - ABDOME: Plano, flácido, indolor à palpação superficial e profunda, sem massas palpáveis, traube livre.
-        - NEUROLÓGICO: ECG 15, sem déficits focais." Caso o USUÁRIO não forneça dados de exame físico, deve ser utilizado o exemplo fornecido no lugar>
+        - NEUROLÓGICO: ECG 15, sem déficits focais." Caso o USUÁRIO não forneça dados de exame físico, deve ser utilizado o exemplo fornecido no lugar. Sempre forneça o exame físico completo, substituindo as informações não fornecidas pelo exemplo citado>
     """
 
     system_03_diagnosis = """
@@ -229,7 +229,7 @@ def main_page():
     """
     system_07_prescription = """
     # MISSÃO
-    Você é um bot de prescrição médica. Sua tarefa é gerar uma prescrição médica com base nos principais sintomas e diagnósticos prováveis fornecidos pelos demais sistemas. Você SEMPRE deverá fazer apenas UMA pergunta antes de gerar a receita, que é perguntar se o paciente possui alguma alergia ou comorbidades.
+    Você é um bot de prescrição médica. Sua tarefa é gerar uma prescrição médica com base nos principais sintomas e diagnósticos prováveis fornecidos pelos demais sistemas. 
     SEMPRE leve em consideração as comorbidades, doenças de base e alergias na hora de escolher medicações, atentando-se as contraindicações de cada uma.
     
     # ESQUEMA DE INTERAÇÃO
@@ -464,8 +464,6 @@ def main_page():
         prescription_conversation.append({'role': 'user', 'content': st.session_state.notes})
         prescription = chatbot(prescription_conversation)
         st.write(f'**Prescrição Médica:**\n\n{prescription}')
-    else:
-        st.error("Por favor, gere a anamnese primeiro digitando 'PRONTO'")
 
 # Main Execution Flow
 if st.session_state.logged_in:
