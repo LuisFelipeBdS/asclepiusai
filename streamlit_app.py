@@ -80,7 +80,33 @@ def main_page():
     Você é um bot de registro que receberá uma transcrição de recepção de dados do paciente. Você deve traduzir o registro do chat em notas médicas detalhadas para o médico.
 
     # ESQUEMA DE INTERAÇÃO
-    O USUÁRIO lhe fornecerá a transcrição. Seu resultado será uma lista de notas hifenizadas. Certifique-se de capturar os sintomas e qualquer informação relevante de maneira ordenada e estruturada.
+    O USUÁRIO lhe fornecerá a transcrição. Seu resultado será uma lista de notas hifenizadas. Certifique-se de capturar os sintomas e qualquer informação relevante de maneira ordenada e estruturada. Você gerará um relatório com o seguinte formato:
+    
+    # FORMATO DO RELATÓRIO
+
+    1. IDENTIFICAÇÃO
+        - <Forneça dados de identificação do paciente se forem providos pelo USUÁRIO, tais como nome, sexo, idade, etc>
+
+    2. QUEIXA PRINCIPAL
+        - <Escreva a queixa principal do paciente, se fornecida pelo USUÁRIO, nas palavras do paciente>
+    
+    3. HISTÓRIA ATUAL DA DOENÇA
+        - <Escreva a história atual da doença, isto é, os achados médicos fornecidos e encontrados pelo USUÁRIO. Use sempre linguagem técnica e médica para descrever os sinais e sintomas, em ordem cronológica.>
+    
+    4. HISTÓRIA PATOLÓGICA PREGRESSA
+        - <Escreva a história patológica pregressa do paciente, utilizando linguagem médica técnica, se fornecida pelo USUÁRIO. Caso não sejam fornecidos dados suficientes, descreva apenas como "dados insuficientes">
+
+    5. HISTÓRIA FISIOLÓGICA DO(A) PACIENTE
+        - <Escreva os dados relativos a história fisiológica do paciente, se possui vacinação em dia, etc. Caso não sejam fornecidos dados suficientes, descreva apenas como "dados insuficientes">
+    
+    6. HISTÓRICO FAMILIAR
+        - <Escreva os dados relativos ao histórico médico patológico do(a) paciente, se possuem alguma patologia digna de nota como diabetes, hipertensão, etc>
+    
+    7. HÁBITOS DE VIDA
+        - <Escreva os hábitos de vida do paciente, se é sedentário ou ativo fisicamente, se pratica etilismo ou tabagismo, etc>
+    
+    8. ISDA (REVISÃO DOS SISTEMAS)
+        - <Escreva uma lista com marcadores dos sistemas do paciente e se possuem algum sintoma relacionado a eles, por exemplo "NEUROLÓGICO: Cefaleia" etc>
     """
 
     system_03_diagnosis = """
@@ -366,7 +392,7 @@ def main_page():
 
     st.header("Descreva o caso clínico. Digite PRONTO quando terminar.")
     if prompt := st.text_area("Luis:", height=200):
-        if prompt.strip().upper() != "PRONTO" and prompt.strip().upper() != "PRESCRIPTION":
+        if prompt.strip().upper() != "PRONTO" and prompt.strip().upper() != "PRESCRIÇÃO":
             st.session_state.user_messages.append(prompt)
             st.session_state.all_messages.append(f'Luis: {prompt}')
             st.session_state.conversation.append({'role': 'user', 'content': prompt})
