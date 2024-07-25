@@ -5,72 +5,6 @@ import base64
 import numpy as np
 from streamlit.components.v1 import html
 
-st.markdown("""
-<style>
-/* Base styles for dark theme */
-.stApp {
-    background-color: #1E1E1E;
-    color: #FFFFFF;
-}
-
-/* Style for input and textarea */
-.stTextInput > div > div > input, .stTextArea > div > div > textarea {
-    color: #000000 !important;
-    background-color: #FFFFFF !important;
-}
-
-/* Style for all headers */
-h1, h2, h3, h4, h5, h6 {
-    color: #4CAF50 !important;
-}
-
-/* Style for paragraphs and labels */
-p, label, .stTextInput label, .stTextArea label {
-    color: #FFFFFF !important;
-}
-
-/* Style for buttons */
-.stButton > button {
-    color: #FFFFFF;
-    background-color: #4CAF50;
-    border: none;
-    padding: 10px 24px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    cursor: pointer;
-    border-radius: 12px;
-    transition-duration: 0.4s;
-}
-.stButton > button:hover {
-    background-color: #45a049;
-}
-
-/* Ensure file uploader text is visible */
-.stFileUploader > div > div > div {
-    color: #FFFFFF !important;
-}
-
-/* Style for checkboxes and radio buttons */
-.stCheckbox > label, .stRadio > label {
-    color: #FFFFFF !important;
-}
-
-/* Ensure dropdown/selectbox text is visible */
-.stSelectbox > div > div > div {
-    color: #FFFFFF !important;
-}
-
-/* Style for info, success, warning, and error boxes */
-.stAlert > div {
-    color: #1E1E1E !important;
-}
-
-</style>
-""", unsafe_allow_html=True)
-
 # Initialize OpenAI client
 client = openai.Client(api_key=st.secrets.get("OPENAI_API_KEY"))
 
@@ -155,7 +89,7 @@ def copy_to_clipboard_button(text, button_text="Copiar conteúdo"):
         }});
     }}
     </script>
-    <button onclick="copyToClipboard()" class="custom-button">{button_text}</button>
+    <button onclick="copyToClipboard()">{button_text}</button>
     """
     
     # Render the button using Streamlit's html component
@@ -445,33 +379,9 @@ def main_page():
         reader.readAsDataURL(audioBlob);
     }
     </script>
-    <style>
-.custom-button {
-    color: #FFFFFF;
-    background-color: #4CAF50;
-    border: none;
-    padding: 10px 24px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    cursor: pointer;
-    border-radius: 12px;
-    transition-duration: 0.4s;
-}
-.custom-button:hover {
-    background-color: #45a049;
-}
-.custom-button:disabled {
-    background-color: #cccccc;
-    color: #666666;
-    cursor: not-allowed;
-}
-</style>
-    
-    <button id="start" onclick="startRecording()" class="custom-button">Começar gravação</button>
-    <button id="stop" onclick="stopRecording()" disabled class="custom-button">Pausar gravação</button>
+
+    <button id="start" onclick="startRecording()">Começar gravação</button>
+    <button id="stop" onclick="stopRecording()" disabled>Pausar gravação</button>
     """
 
     # Display the HTML and JavaScript code
@@ -530,7 +440,7 @@ def main_page():
             st.session_state.conversation.append({'role': 'assistant', 'content': response})
             st.session_state.all_messages.append(f'RECEPÇÃO: {response}')
             st.write(f'**RECEPÇÃO:** {response}')
-    else:
+        elif prompt.strip().upper() == "PRONTO":
             st.write("Consegui os dados. Gerando notas e relatórios...")
 
             # Include transcription and image analysis in the notes
@@ -579,10 +489,10 @@ def main_page():
             st.write(f'**Conduta Médica Sugerida:**\n\n{conduct}')
         
             st.session_state.notes = notes
-            if prompt.strip().upper() == "PRESCRIÇÃO":
-                st.write("Gerando prescrição médica...") 
-          
-          # Generate Prescription
+        elif prompt.strip().upper() == "PRESCRIÇÃO":
+            st.write("Gerando prescrição médica...")
+
+            # Generate Prescription
     prescription_conversation = [{'role': 'system', 'content': system_07_prescription}]
     if 'notes' in st.session_state:
         prescription_conversation.append({'role': 'user', 'content': st.session_state.notes})
