@@ -520,8 +520,8 @@ def main_page():
                 st.session_state.all_messages.append(f'IMAGE ANALYSIS: {image_analysis}')
 
     st.header("Descreva o caso clínico. Digite PRONTO quando terminar.")
-    prompt = st.text_area("Luis:", height=200)
-    if prompt.strip().upper() != "PRONTO":
+    if prompt := st.text_area("Luis:", height=200):
+        if prompt.strip().upper() != "PRONTO" and prompt.strip().upper() != "PRESCRIÇÃO":
             st.session_state.user_messages.append(prompt)
             st.session_state.all_messages.append(f'Luis: {prompt}')
             st.session_state.conversation.append({'role': 'user', 'content': prompt})
@@ -578,17 +578,17 @@ def main_page():
             conduct = chatbot(conduct_conversation)
             st.write(f'**Conduta Médica Sugerida:**\n\n{conduct}')
         
+            st.session_state.notes = notes
+            if prompt.strip().upper() == "PRESCRIÇÃO":
+                st.write("Gerando prescrição médica...") 
+          
           # Generate Prescription
-    if prompt.strip().upper() != "PRESCRIÇÃO":
-        if st.session_state.notes:
-            st.write("**Gerando Prescrição Médica...**")
-            prescription_conversation = [{'role': 'system', 'content': system_07_prescription}]
-            prescription_conversation.append({'role': 'user', 'content': st.session_state.notes})
-            prescription = chatbot(prescription_conversation)
-            st.write(f'**Prescrição Médica:**\n\n{prescription}')
-            copy_to_clipboard_button(prescription, "Copiar prescrição")
-        else:
-            st.error("Por favor, complete a descrição do caso clínico primeiro.")
+    prescription_conversation = [{'role': 'system', 'content': system_07_prescription}]
+    if 'notes' in st.session_state:
+        prescription_conversation.append({'role': 'user', 'content': st.session_state.notes})
+        prescription = chatbot(prescription_conversation)
+        st.write(f'**Prescrição Médica:**\n\n{prescription}')
+        copy_to_clipboard_button(prescription, "Copiar prescrição")
 
 # Main Execution Flow
 if st.session_state.logged_in:
