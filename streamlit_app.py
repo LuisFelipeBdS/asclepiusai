@@ -451,7 +451,7 @@ def main_page():
 
             # Generate Prescription
             prescription_conversation = [{'role': 'system', 'content': system_07_prescription}]
-            prescription_conversation.append({'role': 'user', 'content': f"Symptoms and probable diagnosis:\n{report}"})
+            prescription_conversation.append({'role': 'user', 'content': notes})
             prescription = chatbot(prescription_conversation)
             st.write(f'**Prescrição Médica:**\n\n{prescription}')
 
