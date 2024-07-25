@@ -5,6 +5,32 @@ import base64
 import numpy as np
 from streamlit.components.v1 import html
 
+st.markdown("""
+<style>
+.stApp {
+    background-color: #1E1E1E;
+    color: #FFFFFF;
+}
+.stButton > button {
+    color: #FFFFFF;
+    background-color: #4CAF50;
+    border: none;
+    padding: 10px 24px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 12px;
+    transition-duration: 0.4s;
+}
+.stButton > button:hover {
+    background-color: #45a049;
+}
+</style>
+""", unsafe_allow_html=True)
+
 # Initialize OpenAI client
 client = openai.Client(api_key=st.secrets.get("OPENAI_API_KEY"))
 
@@ -89,7 +115,7 @@ def copy_to_clipboard_button(text, button_text="Copiar conteúdo"):
         }});
     }}
     </script>
-    <button onclick="copyToClipboard()">{button_text}</button>
+    <button onclick="copyToClipboard()" class="custom-button">{button_text}</button>
     """
     
     # Render the button using Streamlit's html component
@@ -379,9 +405,33 @@ def main_page():
         reader.readAsDataURL(audioBlob);
     }
     </script>
-
-    <button id="start" onclick="startRecording()">Começar gravação</button>
-    <button id="stop" onclick="stopRecording()" disabled>Pausar gravação</button>
+    <style>
+.custom-button {
+    color: #FFFFFF;
+    background-color: #4CAF50;
+    border: none;
+    padding: 10px 24px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 12px;
+    transition-duration: 0.4s;
+}
+.custom-button:hover {
+    background-color: #45a049;
+}
+.custom-button:disabled {
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+}
+</style>
+    
+    <button id="start" onclick="startRecording()" class="custom-button">Começar gravação</button>
+    <button id="stop" onclick="stopRecording()" disabled class="custom-button">Pausar gravação</button>
     """
 
     # Display the HTML and JavaScript code
