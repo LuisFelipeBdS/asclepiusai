@@ -464,7 +464,7 @@ def main_page():
             report_conversation.append({'role': 'user', 'content': notes})
             report = chatbot(report_conversation)
             st.write(f'**Relatório de Hipóteses:**\n\n{report}')
-            copy_to_clipboard_button(notes, "Copiar hipótese diagnóstica")
+            copy_to_clipboard_button(report, "Copiar hipótese diagnóstica")
 
             # Prepare for Clinical Evaluation
             st.write("**Preparando para Avaliação Clínica...**")
@@ -479,7 +479,7 @@ def main_page():
             referrals_conversation.append({'role': 'user', 'content': notes})
             referrals = chatbot(referrals_conversation)
             st.write(f'**Encaminhamentos e Exames Complementares:**\n\n{referrals}')
-            copy_to_clipboard_button(notes, "Copiar encaminhamentos")
+            copy_to_clipboard_button(referrals, "Copiar encaminhamentos")
 
             # Generate Suggested Medical Conduct
             st.write("**Gerando Conduta Médica Sugerida...**")
@@ -498,7 +498,7 @@ def main_page():
         prescription_conversation.append({'role': 'user', 'content': st.session_state.notes})
         prescription = chatbot(prescription_conversation)
         st.write(f'**Prescrição Médica:**\n\n{prescription}')
-        copy_to_clipboard_button(notes, "Copiar prescrição")
+        copy_to_clipboard_button(prescription, "Copiar prescrição")
 
 # Main Execution Flow
 if st.session_state.logged_in:
