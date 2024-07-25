@@ -519,45 +519,20 @@ def main_page():
                 st.write("Análise de imagem", image_analysis)
                 st.session_state.all_messages.append(f'IMAGE ANALYSIS: {image_analysis}')
 
-# JavaScript to handle Enter key press
-js_code = """
-<script>
-document.addEventListener('keydown', function(e) {
-    if (e.key == 'Enter' && !e.shiftKey) {
-        const textArea = document.querySelector('.stTextArea textarea');
-        if (textArea && textArea === document.activeElement) {
-            e.preventDefault();
-            const submitButton = document.querySelector('button.stButton');
-            if (submitButton) {
-                submitButton.click();
-            }
-        }
-    }
-});
-</script>
-"""
-
-# Render the JavaScript
-html(js_code)
-
-st.header("Descreva o caso clínico. Digite PRONTO quando terminar.")
-
-# Create a text area for input
-user_input = st.text_area("Luis:", height=200, key="user_input")
-
-# Create a submit button
-if st.button("Enviar") or user_input:  # This allows submission via button or Enter key
-    if user_input.strip():  # Check if input is not empty
-        if user_input.strip().upper() != "PRONTO" and user_input.strip().upper() != "PRESCRIÇÃO":
-            st.session_state.user_messages.append(user_input)
-            st.session_state.all_messages.append(f'Luis: {user_input}')
-            st.session_state.conversation.append({'role': 'user', 'content': user_input})
+    st.header("Descreva o caso clínico. Digite PRONTO quando terminar.")
+    prompt = st.text_area("Luis:", height=200)
+    
+    if st.button("Enviar"):
+        if prompt.strip().upper() != "PRONTO":
+            st.session_state.user_messages.append(prompt)
+            st.session_state.all_messages.append(f'Luis: {prompt}')
+            st.session_state.conversation.append({'role': 'user', 'content': prompt})
 
             response = chatbot(st.session_state.conversation)
             st.session_state.conversation.append({'role': 'assistant', 'content': response})
             st.session_state.all_messages.append(f'RECEPÇÃO: {response}')
             st.write(f'**RECEPÇÃO:** {response}')
-        elif user_input.strip().upper() == "PRONTO":
+        else:
             st.write("Consegui os dados. Gerando notas e relatórios...")
 
             # Include transcription and image analysis in the notes
@@ -605,22 +580,17 @@ if st.button("Enviar") or user_input:  # This allows submission via button or En
             conduct = chatbot(conduct_conversation)
             st.write(f'**Conduta Médica Sugerida:**\n\n{conduct}')
         
-            st.session_state.notes = notes
-        elif user_input.strip().upper() == "PRESCRIÇÃO":
-            st.write("Gerando prescrição médica...")
-
-            # Generate Prescription
-    prescription_conversation = [{'role': 'system', 'content': system_07_prescription}]
-    if 'notes' in st.session_state:
-        prescription_conversation.append({'role': 'user', 'content': st.session_state.notes})
-        prescription = chatbot(prescription_conversation)
-        st.write(f'**Prescrição Médica:**\n\n{prescription}')
-        copy_to_clipboard_button(prescription, "Copiar prescrição")
-        st.session_state.user_input = ""
-    # Display conversation history
-st.subheader("Histórico da Conversa")
-for message in st.session_state.all_messages:
-    st.write(message)
+          # Generate Prescription
+    if st.button("PRESCRIÇÃO"):
+        if st.session_state.notes:
+            st.write("**Gerando Prescrição Médica...**")
+            prescription_conversation = [{'role': 'system', 'content': system_07_prescription}]
+            prescription_conversation.append({'role': 'user', 'content': st.session_state.notes})
+            prescription = chatbot(prescription_conversation)
+            st.write(f'**Prescrição Médica:**\n\n{prescription}')
+            copy_to_clipboard_button(prescription, "Copiar prescrição")
+        else:
+            st.error("Por favor, complete a descrição do caso clínico primeiro.")
 
 # Main Execution Flow
 if st.session_state.logged_in:
