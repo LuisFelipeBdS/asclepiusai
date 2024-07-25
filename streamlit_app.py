@@ -107,6 +107,14 @@ def main_page():
     
     8. ISDA (REVISÃO DOS SISTEMAS)
         - <Escreva uma lista com marcadores dos sistemas do paciente e se possuem algum sintoma relacionado a eles, por exemplo "NEUROLÓGICO: Cefaleia" etc>
+    
+    9. EXAME FÍSICO
+        - <Descreva os dados do exame físico conforme fornecidos pelo USUÁRIO. Deve ser descrito por uma lista com marcadores, seguindo a ordem do exemplo abaixo:
+        "- ECTOSCOPIA: Paciente em BEG (bom estado geral), vígil, orientado no tempo e espaço, fáceis atípica, normocorado, acianótico, anictérico, perfundido, hidratado, nutrido, sem linfonodomegalias, pulsos presentes e simétricos. MMII (membros inferiores) – pulsos presentes e simétricos, perfundido, sem sinais de TVP e livre de edemas.
+        - AUSCULTA RESPIRATÓRIA: Murmúrio vesicular presente, sem ruídos adventícios, 19 IRPM.
+        - AUSCULTA CARDIOVASCULAR: Ritmo cardíaco regular, em 2 tempos, bulhas normofonéticas, sem sopros ou estalidos.
+        - ABDOME: Plano, flácido, indolor à palpação superficial e profunda, sem massas palpáveis, traube livre.
+        - NEUROLÓGICO: ECG 15, sem déficits focais." Caso o USUÁRIO não forneça dados de exame físico, deve ser utilizado o exemplo fornecido no lugar>
     """
 
     system_03_diagnosis = """
@@ -205,14 +213,14 @@ def main_page():
 
     # FORMATO DO RELATÓRIO
 
-    1. <NOME DA CONDUTA EM LETRAS MAIÚSCULAS>: <Descrição detalhada da conduta recomendada>
+    1. <NOME DA CONDUTA EM LETRAS MAIÚSCULAS>: <Descrição da conduta recomendada, sendo sempre iniciada com um verbo de ação, como "conduzo, solicito, prescrevo">
        - MOTIVAÇÃO: <Razão pela qual esta conduta é recomendada>
        - OBJETIVOS: <Objetivos específicos desta conduta>
        - PROCEDIMENTOS: <Procedimentos a serem seguidos>
        - MONITORAMENTO: <Métodos de monitoramento e avaliação da eficácia da conduta>
        - AJUSTES: <Possíveis ajustes na conduta baseada na resposta do paciente>
 
-    2. <NOME DA CONDUTA EM LETRAS MAIÚSCULAS>: <Descrição detalhada da conduta recomendada>
+    2. <NOME DA CONDUTA EM LETRAS MAIÚSCULAS>: <Descrição da conduta recomendada, sendo sempre iniciada com um verbo de ação, como "conduzo, solicito, prescrevo">
        - MOTIVAÇÃO: <Razão pela qual esta conduta é recomendada>
        - OBJETIVOS: <Objetivos específicos desta conduta>
        - PROCEDIMENTOS: <Procedimentos a serem seguidos>
@@ -282,7 +290,7 @@ def main_page():
     st.markdown("<h1 style='color: purple;'>Asclepius</h1>", unsafe_allow_html=True)
 
 # Function for the live audio recording
-    st.title("Anamnese por gravação de audio")
+    st.header("Anamnese por gravação de audio")
 
     # JavaScript code for audio recording
     js_code = """
@@ -445,15 +453,19 @@ def main_page():
             conduct_conversation.append({'role': 'user', 'content': notes})
             conduct = chatbot(conduct_conversation)
             st.write(f'**Conduta Médica Sugerida:**\n\n{conduct}')
-
+        
+            st.session_state.notes = notes
         elif prompt.strip().upper() == "PRESCRIÇÃO":
             st.write("Gerando prescrição médica...")
 
             # Generate Prescription
-            prescription_conversation = [{'role': 'system', 'content': system_07_prescription}]
-            prescription_conversation.append({'role': 'user', 'content': notes})
-            prescription = chatbot(prescription_conversation)
-            st.write(f'**Prescrição Médica:**\n\n{prescription}')
+    prescription_conversation = [{'role': 'system', 'content': system_07_prescription}]
+    if 'notes' in st.session_state:
+        prescription_conversation.append({'role': 'user', 'content': st.session_state.notes})
+        prescription = chatbot(prescription_conversation)
+        st.write(f'**Prescrição Médica:**\n\n{prescription}')
+    else:
+        st.error("Por favor, gere a anamnese primeiro digitando 'PRONTO'")
 
 # Main Execution Flow
 if st.session_state.logged_in:
