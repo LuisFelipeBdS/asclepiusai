@@ -41,7 +41,7 @@ def analyze_image(image_file):
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": "Analyze this medical image and provide a detailed description."},
+                        {"type": "text", "text": "Você é um assistente de um médico radiologista. Seu trabalho é observar as principais alterações na imagem e sugerir possíveis e hipotéticos diagnósticos, apenas como ferramenta de auxílio. Assuma que todas as imagens e sua resposta serão avaliados por um médico especialista."},
                         {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64.b64encode(image_file.getvalue()).decode()}"}}
                     ],
                 }
